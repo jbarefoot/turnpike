@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	turnpikeVersion     = "0.2.0"
+	turnpikeVersion     = "0.2.1"
 	turnpikeServerIdent = "turnpike-" + turnpikeVersion
 	debug               = false
 )

@@ -1,21 +1,29 @@
-// Copyright (c) 2013 Joshua Elliott
-// Released under the MIT License
-// http://opensource.org/licenses/MIT
-
 package main
 
 import (
 	"bufio"
 	"fmt"
+	"github.com/mattbaird/turnpike"
 	"os"
 	"strconv"
 	"strings"
-	"turnpike"
+)
+
+const (
+	WELCOME     = iota // iota is reset to 0
+	PREFIX      = iota
+	CALL        = iota
+	CALLRESULT  = iota
+	CALLERROR   = iota
+	SUBSCRIBE   = iota
+	UNSUBSCRIBE = iota
+	PUBLISH     = iota
+	EVENT       = iota
 )
 
 func main() {
 	c := turnpike.NewClient()
-	fmt.Print("Server address (default: localhost:8080)\n> ")
+	fmt.Print("Server address (default: localhost:9091/ws)\n> ")
 	read := bufio.NewReader(os.Stdin)
 	// if _, err := fmt.Scanln(&server); err != nil {
 	server, err := read.ReadString('\n')
@@ -25,7 +33,7 @@ func main() {
 	}
 	server = strings.TrimSpace(server)
 	if server == "" {
-		server = "localhost:8080"
+		server = "localhost:9091/ws"
 	}
 	if err := c.Connect("ws://"+server, "http://localhost:8070"); err != nil {
 		fmt.Println("Error connecting:", err)
@@ -65,18 +73,23 @@ func main() {
 
 		err = nil
 		switch msgType {
-		case turnpike.PREFIX:
+		case PREFIX:
 			var prefix, URI string
 			fmt.Sscan(line, &prefix, &URI)
 			err = c.Prefix(prefix, URI)
-		case turnpike.CALL:
+		case CALL:
 			args := strings.Split(line, " ")
-			err = c.Call(args[0], args[1:])
-		case turnpike.SUBSCRIBE:
-			err = c.Subscribe(line)
-		case turnpike.UNSUBSCRIBE:
+			c.Call(args[0], args[1:])
+
+		case SUBSCRIBE:
+			eventCh := make(chan interface{})
+			err = c.Subscribe(line, func(uri string, event interface{}) {
+				eventCh <- event
+			})
+			go respond(eventCh)
+		case UNSUBSCRIBE:
 			err = c.Unsubscribe(line)
-		case turnpike.PUBLISH:
+		case PUBLISH:
 			args := strings.Split(line, " ")
 			if len(args) > 2 {
 				err = c.Publish(args[0], args[1], args[2:])
@@ -91,5 +104,11 @@ func main() {
 		if err != nil {
 			fmt.Println("Error sending message:", err)
 		}
+	}
+}
+func respond(eventCh chan (interface{})) {
+	select {
+	case msg := <-eventCh:
+		fmt.Println("Got event:", msg)
 	}
 }

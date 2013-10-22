@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/jcelliott/turnpike"
+	"github.com/mattbaird/turnpike"
 	"log"
 	"net/http"
 )

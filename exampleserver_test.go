@@ -1,7 +1,7 @@
 package turnpike_test
 
 import (
-	"github.com/jcelliott/turnpike"
+	"github.com/mattbaird/turnpike"
 	"net/http"
 )
 

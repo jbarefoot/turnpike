@@ -44,7 +44,7 @@ type CallResult struct {
 }
 
 // EventHandler is an interface for handlers to published events. The topicURI
-// is the URI of the event and event is the event centents.
+// is the URI of the event and event is the event contents.
 type EventHandler func(topicURI string, event interface{})
 
 // NewClient creates a new WAMP client.

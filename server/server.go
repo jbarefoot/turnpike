@@ -7,9 +7,9 @@ package main
 import (
 	"code.google.com/p/go.net/websocket"
 	"fmt"
+	"github.com/mattbaird/turnpike"
 	"log"
 	"net/http"
-	"turnpike"
 )
 
 func main() {
