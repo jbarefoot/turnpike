@@ -16,7 +16,7 @@ func TestServer_SubNoHandler(t *testing.T) {
 
 	http.Handle("/ws_s1", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8101", nil)
@@ -60,7 +60,7 @@ func TestServer_RegisterSubHandler(t *testing.T) {
 
 	http.Handle("/ws_s2", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8102", nil)
@@ -96,7 +96,7 @@ func TestServer_SubHandlerAccept(t *testing.T) {
 
 	http.Handle("/ws_s3", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8103", nil)
@@ -137,7 +137,7 @@ func TestServer_SubHandlerDeny(t *testing.T) {
 
 	http.Handle("/ws_s4", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8104", nil)
@@ -173,7 +173,7 @@ func TestServer_RegisterPubHandler(t *testing.T) {
 
 	http.Handle("/ws_s5", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8105", nil)
@@ -210,7 +210,7 @@ func TestServer_PubHandlerChange(t *testing.T) {
 
 	http.Handle("/ws_s6", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8106", nil)

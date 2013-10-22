@@ -184,6 +184,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 		return
 	}
 
+	// this should be put into a more persistent store
 	c := make(chan string, serverBacklog)
 	t.clients[id] = c
 

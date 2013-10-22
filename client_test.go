@@ -20,7 +20,7 @@ func TestClient_CallResult(t *testing.T) {
 		})
 	http.Handle("/ws1", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8001", nil)
@@ -116,7 +116,7 @@ func TestClient_Event(t *testing.T) {
 	s := NewServer()
 	http.Handle("/ws4", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
-	// Currently there is no way of closing the listener. A cusom server and
+	// Currently there is no way of closing the listener. A custom server and
 	// handler will work but requires more work. TBD.
 	go func() {
 		err := http.ListenAndServe(":8004", nil)

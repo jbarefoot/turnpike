@@ -14,8 +14,7 @@ import (
 
 func main() {
 	s := turnpike.NewServer()
-	// for Go1.1, this will be just websocket.Handler(s.HandleWebsocket)
-	http.Handle("/", websocket.Handler(turnpike.HandleWebsocket(s)))
+	http.Handle("/", websocket.Handler(s.HandleWebsocket))
 	fmt.Println("Listening on port 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
