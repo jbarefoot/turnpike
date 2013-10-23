@@ -64,7 +64,7 @@ func NewClient() *Client {
 // Ref: http://wamp.ws/spec#prefix_message
 func (c *Client) Prefix(prefix, URI string) error {
 	if debug {
-		log.Print("turnpike: sending prefix")
+		log.Printf("turnpike: sending prefix %s:%s", prefix, URI)
 	}
 	err := c.prefixes.registerPrefix(prefix, URI)
 	if err != nil {
