@@ -6,6 +6,7 @@ package turnpike
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -252,7 +253,8 @@ func createCallError(callID, errorURI, errorDesc string, errorDetails ...interfa
 		return "", &WAMPError{"invalid URI: " + errorURI}
 	}
 	var data []interface{}
-	data = append(data, msgCallError, callID, errorURI, errorDesc)
+	filledInErrorDesc := fmt.Sprintf(errorDesc, errorDetails)
+	data = append(data, msgCallError, callID, errorURI, filledInErrorDesc)
 	data = append(data, errorDetails...)
 	b, err := json.Marshal(data)
 	return string(b), err
