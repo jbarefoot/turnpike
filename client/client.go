@@ -79,14 +79,23 @@ func main() {
 			err = c.Prefix(prefix, URI)
 		case CALL:
 			args := strings.Split(line, " ")
-			c.Call(args[0], args[1:])
-
+			resultCh := make(chan turnpike.CallResult)
+			resultCh = c.Call(args[0], args[1:])
+			r := <-resultCh
+			if r.Error != nil {
+				fmt.Println(r.Error)
+			} else {
+				fmt.Printf("Result %s\n", r.Result)
+			}
 		case SUBSCRIBE:
 			eventCh := make(chan interface{})
 			err = c.Subscribe(line, func(uri string, event interface{}) {
 				eventCh <- event
 			})
-			go respond(eventCh)
+			if err != nil {
+				fmt.Printf("Failed to subscribe :%v", err)
+			}
+			go receive(eventCh)
 		case UNSUBSCRIBE:
 			err = c.Unsubscribe(line)
 		case PUBLISH:
@@ -95,6 +104,9 @@ func main() {
 				err = c.Publish(args[0], args[1], args[2:])
 			} else {
 				err = c.Publish(args[0], args[1])
+			}
+			if err != nil {
+				fmt.Printf("Failed to publish :%v", err)
 			}
 		default:
 			fmt.Println("Invalid message type:", msgType)
@@ -106,9 +118,11 @@ func main() {
 		}
 	}
 }
-func respond(eventCh chan (interface{})) {
-	select {
-	case msg := <-eventCh:
-		fmt.Println("Got event:", msg)
+func receive(eventCh chan (interface{})) {
+	for {
+		select {
+		case msg := <-eventCh:
+			fmt.Println("Got event:", msg)
+		}
 	}
 }
