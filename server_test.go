@@ -12,7 +12,7 @@ import (
 )
 
 func TestServer_SubNoHandler(t *testing.T) {
-	s := NewServer()
+	s := NewServer(false)
 
 	http.Handle("/ws_s1", s.Handler)
 	// TODO: needs better way of running multiple listen and serve.
@@ -51,7 +51,7 @@ func TestServer_SubNoHandler(t *testing.T) {
 }
 
 func TestServer_RegisterSubHandler(t *testing.T) {
-	s := NewServer()
+	s := NewServer(false)
 	subCh := make(chan bool)
 	s.RegisterSubHandler("event:test", func(clientID, topicURI string) bool {
 		subCh <- true
@@ -89,7 +89,7 @@ func TestServer_RegisterSubHandler(t *testing.T) {
 }
 
 func TestServer_SubHandlerAccept(t *testing.T) {
-	s := NewServer()
+	s := NewServer(false)
 	s.RegisterSubHandler("event:test", func(clientID, topicURI string) bool {
 		return true
 	})
@@ -130,7 +130,7 @@ func TestServer_SubHandlerAccept(t *testing.T) {
 }
 
 func TestServer_SubHandlerDeny(t *testing.T) {
-	s := NewServer()
+	s := NewServer(false)
 	s.RegisterSubHandler("event:test", func(clientID, topicURI string) bool {
 		return false
 	})
@@ -164,7 +164,7 @@ func TestServer_SubHandlerDeny(t *testing.T) {
 }
 
 func TestServer_RegisterPubHandler(t *testing.T) {
-	s := NewServer()
+	s := NewServer(false)
 	pubCh := make(chan bool)
 	s.RegisterPubHandler("event:test", func(topicURI string, event interface{}) interface{} {
 		pubCh <- true
@@ -203,7 +203,7 @@ func TestServer_RegisterPubHandler(t *testing.T) {
 }
 
 func TestServer_PubHandlerChange(t *testing.T) {
-	s := NewServer()
+	s := NewServer(false)
 	s.RegisterPubHandler("event:test", func(topicURI string, event interface{}) interface{} {
 		return event.(string) + "2"
 	})

@@ -75,7 +75,8 @@ type SubHandler func(clientID string, topicURI string) bool
 type PubHandler func(topicURI string, event interface{}) interface{}
 
 // NewServer creates a new WAMP server.
-func NewServer() *Server {
+func NewServer(isDebug bool) *Server {
+	debug = isDebug
 	s := &Server{
 		clients:       make(map[string]chan string),
 		prefixes:      make(map[string]prefixMap),

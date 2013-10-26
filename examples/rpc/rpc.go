@@ -18,7 +18,7 @@ func handleTest(client, uri string, args ...interface{}) (interface{}, error) {
 func main() {
 	flag.Parse()
 	if *runMode == "server" {
-		s := turnpike.NewServer()
+		s := turnpike.NewServer(false)
 		s.RegisterRPC("rpc:test", handleTest)
 
 		http.Handle("/ws", s.Handler)

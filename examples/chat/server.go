@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	s := turnpike.NewServer()
+	s := turnpike.NewServer(false)
 	http.Handle("/ws", s.Handler)
 	http.Handle("/", http.FileServer(http.Dir("web")))
 

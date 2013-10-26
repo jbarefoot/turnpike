@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	s := turnpike.NewServer()
+	s := turnpike.NewServer(false)
 	http.Handle("/", websocket.Handler(s.HandleWebsocket))
 	fmt.Println("Listening on port 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

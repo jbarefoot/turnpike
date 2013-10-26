@@ -6,7 +6,7 @@ import (
 )
 
 func ExampleServer_NewServer() {
-	s := turnpike.NewServer()
+	s := turnpike.NewServer(false)
 
 	http.Handle("/ws", s.Handler)
 	err := http.ListenAndServe(":8080", nil)
