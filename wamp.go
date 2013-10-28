@@ -253,7 +253,10 @@ func createCallError(callID, errorURI, errorDesc string, errorDetails ...interfa
 		return "", &WAMPError{"invalid URI: " + errorURI}
 	}
 	var data []interface{}
-	filledInErrorDesc := fmt.Sprintf(errorDesc, errorDetails)
+	filledInErrorDesc := errorDesc
+	if len(errorDetails) > 0 {
+		filledInErrorDesc = fmt.Sprintf(errorDesc, errorDetails)
+	}
 	data = append(data, msgCallError, callID, errorURI, filledInErrorDesc)
 	data = append(data, errorDetails...)
 	b, err := json.Marshal(data)
