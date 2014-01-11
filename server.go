@@ -249,7 +249,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handlePrefix(id, msg)
+			go t.handlePrefix(id, msg)
 		case msgCall:
 			var msg callMsg
 			err := json.Unmarshal(data, &msg)
@@ -259,7 +259,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handleCall(id, msg)
+			go t.handleCall(id, msg)
 		case msgSubscribe:
 			var msg subscribeMsg
 			err := json.Unmarshal(data, &msg)
@@ -269,7 +269,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handleSubscribe(id, msg)
+			go t.handleSubscribe(id, msg)
 		case msgUnsubscribe:
 			var msg unsubscribeMsg
 			err := json.Unmarshal(data, &msg)
@@ -279,7 +279,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handleUnsubscribe(id, msg)
+			go t.handleUnsubscribe(id, msg)
 		case msgPublish:
 			var msg publishMsg
 			err := json.Unmarshal(data, &msg)
@@ -289,7 +289,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handlePublish(id, msg)
+			go t.handlePublish(id, msg)
 		case msgWelcome, msgCallResult, msgCallError, msgEvent:
 			if debug {
 				log.Printf("turnpike: server -> client message received, ignored: %s", messageTypeString(typ))
