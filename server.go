@@ -44,12 +44,21 @@ type Server struct {
 	websocket.Server
 }
 
-// RPCHandler is an interface that handlers to RPC calls should implement.
-// The first parameter is the call ID, the second is the proc URI. Last comes
-// all optional arguments to the RPC call. The return can be of any type that
-// can be marshaled to JSON, or a error (preferably RPCError but any error works.)
-// NOTE: this may be broken in v2 if multiple-return is implemented
-type RPCHandler func(clientID string, topicURI string, args ...interface{}) (interface{}, error)
+// Using a handle func pattern so we can adapt the calls and do things like retry
+type RPCHandler interface {
+	// RPCHandler is an interface that handlers to RPC calls should implement.
+	// The first parameter is the call ID, the second is the proc URI. Last comes
+	// all optional arguments to the RPC call. The return can be of any type that
+	// can be marshaled to JSON, or a error (preferably RPCError but any error works.)
+	// NOTE: this may be broken in v2 if multiple-return is implemented
+	HandleRPC(clientID string, topicURI string, args ...interface{}) (interface{}, error)
+}
+
+type HandlerFunc func(clientID string, topicURI string, args ...interface{}) (interface{}, error)
+
+func (f HandlerFunc) HandleRPC(clientID string, topicURI string, args ...interface{}) (interface{}, error) {
+	return f(clientID, topicURI, args...)
+}
 
 // RPCError represents a call error and is the recommended way to return an
 // error from a RPC handler.
@@ -100,9 +109,15 @@ func (t *Server) SetSessionOpenCallback(f func(string)) {
 }
 
 // RegisterRPC adds a handler for the RPC named uri.
-func (t *Server) RegisterRPC(uri string, f RPCHandler) {
+func (t *Server) RegisterRPCFunc(uri string, f RPCHandler) {
 	if f != nil {
 		t.rpcHandlers[uri] = f
+	}
+}
+
+func (t *Server) RegisterRPC(uri string, f func(clientID string, topicURI string, args ...interface{}) (interface{}, error)) {
+	if f != nil {
+		t.rpcHandlers[uri] = HandlerFunc(f)
 	}
 }
 
@@ -330,9 +345,9 @@ func (t *Server) handleCall(id string, msg callMsg) {
 	var out string
 	var err error
 
-	if f, ok := t.rpcHandlers[msg.ProcURI]; ok && f != nil {
+	if rpcHandlerInterface, ok := t.rpcHandlers[msg.ProcURI]; ok && rpcHandlerInterface != nil {
 		var res interface{}
-		res, err = f(id, msg.ProcURI, msg.CallArgs...)
+		res, err = rpcHandlerInterface.HandleRPC(id, msg.ProcURI, msg.CallArgs...)
 		if err != nil {
 			var errorURI, desc string
 			var details interface{}
