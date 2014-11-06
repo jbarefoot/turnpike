@@ -155,10 +155,13 @@ func (t *Server) UnregisterPubHandler(uri string) {
 }
 
 // SendEvent sends an event with topic directly (not via Client.Publish())
-func (t *Server) SendEvent(topic string, event interface{}) {
+func (t *Server) SendEvent(topic string, event interface{}, excludeMe bool, excludeList []string, eligibleList []string) {
 	t.handlePublish(topic, publishMsg{
-		TopicURI: topic,
-		Event:    event,
+		TopicURI:     topic,
+		Event:        event,
+		ExcludeMe:    excludeMe,
+		ExcludeList:  excludeList,
+		EligibleList: eligibleList,
 	})
 }
 
@@ -438,8 +441,12 @@ func (t *Server) handleUnsubscribe(id string, msg unsubscribeMsg) {
 
 func (t *Server) handlePublish(id string, msg publishMsg) {
 	if debug {
-		log.Print("turnpike: handling publish message")
+		log.Printf("turnpike: msg.Event = %v", msg.Event)
+		log.Printf("turnpike: msg.ExcludeMe = %v", msg.ExcludeMe)
+		log.Printf("turnpike: msg.ExcludeList = %v", msg.ExcludeList)
+		log.Printf("turnpike: msg.EligibleList = %v", msg.EligibleList)
 	}
+
 	uri := checkCurie(t.prefixes[id], msg.TopicURI)
 
 	h := t.getPubHandler(uri)
@@ -463,10 +470,12 @@ func (t *Server) handlePublish(id string, msg publishMsg) {
 
 	var sendTo []string
 	if len(msg.ExcludeList) > 0 || len(msg.EligibleList) > 0 {
+
 		// this is super ugly, but I couldn't think of a better way...
 		for tid := range lm {
 			include := true
 			for _, _tid := range msg.ExcludeList {
+
 				if tid == _tid {
 					include = false
 					break
