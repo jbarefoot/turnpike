@@ -225,7 +225,7 @@ func (c *Client) receiveWelcome() error {
 	var rec string
 	err := websocket.Message.Receive(c.ws, &rec)
 	if err != nil {
-		return fmt.Errorf("Error receiving welcome message: %s", err)
+		return fmt.Errorf("Error receiving welcome message [%s]: %s", rec, err)
 	}
 	if typ := parseMessageType(rec); typ != msgWelcome {
 		return fmt.Errorf("First message received was not welcome")
@@ -239,9 +239,9 @@ func (c *Client) receiveWelcome() error {
 	c.ProtocolVersion = msg.ProtocolVersion
 	c.ServerIdent = msg.ServerIdent
 	if debug {
-		log.Print("turnpike: session id: %s", c.SessionId)
-		log.Print("turnpike: protocol version: %d", c.ProtocolVersion)
-		log.Print("turnpike: server ident: %s", c.ServerIdent)
+		log.Printf("turnpike: session id: %s", c.SessionId)
+		log.Printf("turnpike: protocol version: %d", c.ProtocolVersion)
+		log.Printf("turnpike: server ident: %s", c.ServerIdent)
 	}
 
 	if c.sessionOpenCallback != nil {

@@ -23,7 +23,7 @@ const (
 
 func main() {
 	c := turnpike.NewClient()
-	fmt.Print("Server address (default: localhost:9091/ws)\n> ")
+	fmt.Print("Server address (default: localhost:8080/ws)\n> ")
 	read := bufio.NewReader(os.Stdin)
 	// if _, err := fmt.Scanln(&server); err != nil {
 	server, err := read.ReadString('\n')
@@ -33,9 +33,9 @@ func main() {
 	}
 	server = strings.TrimSpace(server)
 	if server == "" {
-		server = "localhost:9091/ws"
+		server = "localhost:8080/ws"
 	}
-	if err := c.Connect("ws://"+server, "http://localhost:8070"); err != nil {
+	if err := c.Connect("ws://"+server, "http://localhost:8080"); err != nil {
 		fmt.Println("Error connecting:", err)
 		return
 	}
