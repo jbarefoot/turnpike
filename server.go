@@ -296,7 +296,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			go t.handleSubscribe(id, msg)
+			t.handleSubscribe(id, msg)
 		case msgUnsubscribe:
 			var msg unsubscribeMsg
 			err := json.Unmarshal(data, &msg)
@@ -306,7 +306,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			go t.handleUnsubscribe(id, msg)
+			t.handleUnsubscribe(id, msg)
 		case msgPublish:
 			var msg publishMsg
 			err := json.Unmarshal(data, &msg)
@@ -316,7 +316,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			go t.handlePublish(id, msg)
+			t.handlePublish(id, msg)
 		case msgWelcome, msgCallResult, msgCallError, msgEvent:
 			if debug {
 				log.Printf("turnpike: server -> client message received, ignored: %s", messageTypeString(typ))
@@ -395,6 +395,9 @@ func (t *Server) handleCall(id string, msg callMsg) {
 		return
 	}
 	if client, ok := t.clients[id]; ok {
+		if debug {
+			log.Printf("turnpike: client <- out (%v)", out)
+		}
 		client <- out
 	}
 }
@@ -509,7 +512,7 @@ func (t *Server) handlePublish(id string, msg publishMsg) {
 
 	for _, tid := range sendTo {
 		// we're not locking anything, so we need
-		// to make sure the client didn't disconnecct in the
+		// to make sure the client didn't disconnect in the
 		// last few nanoseconds...
 		if client, ok := t.clients[tid]; ok {
 			if len(client) == cap(client) {
