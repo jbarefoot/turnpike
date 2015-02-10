@@ -296,7 +296,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handleSubscribe(id, msg)
+			go t.handleSubscribe(id, msg)
 		case msgUnsubscribe:
 			var msg unsubscribeMsg
 			err := json.Unmarshal(data, &msg)
@@ -306,7 +306,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handleUnsubscribe(id, msg)
+			go t.handleUnsubscribe(id, msg)
 		case msgPublish:
 			var msg publishMsg
 			err := json.Unmarshal(data, &msg)
@@ -316,7 +316,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 				}
 				continue
 			}
-			t.handlePublish(id, msg)
+			go t.handlePublish(id, msg)
 		case msgWelcome, msgCallResult, msgCallError, msgEvent:
 			if debug {
 				log.Printf("turnpike: server -> client message received, ignored: %s", messageTypeString(typ))
@@ -358,9 +358,15 @@ func (t *Server) handleCall(id string, msg callMsg) {
 	var err error
 
 	if rpcHandlerInterface, ok := t.rpcHandlers[msg.ProcURI]; ok && rpcHandlerInterface != nil {
+		if debug {
+			log.Printf("turnpike: rpcHandlerInterface:%v (%v)", msg.ProcURI, msg.CallArgs)
+		}
 		var res interface{}
 		res, err = rpcHandlerInterface.HandleRPC(id, msg.ProcURI, msg.CallArgs...)
 		if err != nil {
+			if debug {
+				log.Printf("turnpike: rpcHandlerInterface error:%v", err)
+			}
 			var errorURI, desc string
 			var details interface{}
 			if er, ok := err.(RPCError); ok {
@@ -378,11 +384,17 @@ func (t *Server) handleCall(id string, msg callMsg) {
 				out, err = createCallError(msg.CallID, errorURI, desc)
 			}
 		} else {
+			if debug {
+				log.Printf("turnpike: createCallResult error:%v", msg.CallID)
+			}
 			out, err = createCallResult(msg.CallID, res)
 		}
 	} else {
 		if debug {
 			log.Printf("turnpike: RPC call not registered: %s", msg.ProcURI)
+		}
+		if debug {
+			log.Printf("turnpike: createCallError error:%v", msg.ProcURI)
 		}
 		out, err = createCallError(msg.CallID, "error:notimplemented", "RPC call '%s' not implemented", msg.ProcURI)
 	}
