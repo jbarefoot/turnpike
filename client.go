@@ -355,6 +355,10 @@ func (c *Client) Connect(server, origin string) error {
 	return nil
 }
 
+func (c *Client) Disconnect() error {
+	return c.ws.Close()
+}
+
 // SetSessionOpenCallback adds a callback function that is run when a new session begins.
 // The callback function must accept a string argument that is the session ID.
 func (c *Client) SetSessionOpenCallback(f func(string)) {
