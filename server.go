@@ -5,7 +5,6 @@
 package turnpike
 
 import (
-	//	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
 	"github.com/nu7hatch/gouuid"
@@ -14,6 +13,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -255,11 +255,20 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 		err := websocket.Message.Receive(conn, &rec)
 		if err != nil {
 			if err != io.EOF {
-				if debug {
-					log.Printf("turnpike: error receiving message, aborting connection: %s", err)
+				if strings.EqualFold(err.Error(), "not implemented") {
+					// pongFrame from IE is fucking broken.
+					//https://github.com/golang/go/issues/6377
+					if debug {
+						log.Printf("turnpike: IE Pongframe Issue - ignoring: [%v]", err)
+					}
+					continue
+				} else {
+					if debug {
+						log.Printf("turnpike: error receiving message, aborting connection: [%v]", err)
+					}
+					break
 				}
 			}
-			break
 		}
 		if debug {
 			log.Printf("turnpike: message received: %s", rec)
