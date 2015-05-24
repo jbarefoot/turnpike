@@ -269,6 +269,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 					break
 				}
 			}
+			break
 		}
 		if debug {
 			log.Printf("turnpike: message received: %s", rec)
