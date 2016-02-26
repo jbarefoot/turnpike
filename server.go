@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/nu7hatch/gouuid"
+	cmap "github.com/streamrail/concurrent-map"
 	"golang.org/x/net/websocket"
 	"io"
 	"log"
@@ -31,7 +32,7 @@ const (
 // Server represents a WAMP server that handles RPC and pub/sub.
 type Server struct {
 	// Client ID -> send channel
-	clients map[string]chan string
+	clients cmap.ConcurrentMap
 	// Client ID -> prefix mapping
 	prefixes map[string]prefixMap
 	// Proc URI -> handler
@@ -88,7 +89,7 @@ type PubHandler func(topicURI string, event interface{}) interface{}
 func NewServer(isDebug bool) *Server {
 	debug = isDebug
 	s := &Server{
-		clients:       make(map[string]chan string),
+		clients:       cmap.New(),
 		prefixes:      make(map[string]prefixMap),
 		rpcHandlers:   make(map[string]RPCHandler),
 		subHandlers:   make(map[string]SubHandler),
@@ -169,8 +170,8 @@ func (t *Server) SendEvent(topic string, event interface{}, excludeMe bool, excl
 // ConnectedClients returns a slice of the ids of all connected clients
 func (t *Server) ConnectedClients() []string {
 	clientIDs := []string{}
-	for id, _ := range t.clients {
-		clientIDs = append(clientIDs, id)
+	for val := range t.clients.Iter() {
+		clientIDs = append(clientIDs, val.Key)
 	}
 	return clientIDs
 }
@@ -215,7 +216,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 
 	// this should be put into a more persistent store
 	c := make(chan string, serverBacklog)
-	t.clients[id] = c
+	t.clients.Set(id, c)
 
 	if t.sessionOpenCallback != nil {
 		t.sessionOpenCallback(id)
@@ -339,7 +340,7 @@ func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 		}
 	}
 
-	delete(t.clients, id)
+	t.clients.Remove(id)
 	close(c)
 }
 
@@ -417,11 +418,11 @@ func (t *Server) handleCall(id string, msg callMsg) {
 		}
 		return
 	}
-	if client, ok := t.clients[id]; ok {
+	if client, ok := t.clients.Get(id); ok {
 		if debug {
 			log.Printf("turnpike: client <- out (%v)", out)
 		}
-		client <- out
+		client.(chan string) <- out
 	}
 }
 
@@ -537,11 +538,11 @@ func (t *Server) handlePublish(id string, msg publishMsg) {
 		// we're not locking anything, so we need
 		// to make sure the client didn't disconnect in the
 		// last few nanoseconds...
-		if client, ok := t.clients[tid]; ok {
-			if len(client) == cap(client) {
-				<-client
+		if client, ok := t.clients.Get(tid); ok {
+			if len(client.(chan string)) == cap(client.(chan string)) {
+				<-client.(chan string)
 			}
-			client <- string(out)
+			client.(chan string) <- string(out)
 		}
 	}
 }
