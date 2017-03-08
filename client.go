@@ -229,7 +229,7 @@ func (c *Client) receiveWelcome() error {
 		return fmt.Errorf("Error receiving welcome message [%s]: %s", rec, err)
 	}
 	if typ := parseMessageType(rec); typ != msgWelcome {
-		return fmt.Errorf("First message received was not welcome")
+		return fmt.Errorf("First message received was not welcome, instead received: %s", rec)
 	}
 	var msg welcomeMsg
 	err = json.Unmarshal([]byte(rec), &msg)
