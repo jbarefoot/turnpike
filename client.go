@@ -330,14 +330,22 @@ func (c *Client) send() {
 	}
 }
 
+func (c *Client) ConnectWithHeaders(server, origin string, headers map[string]string) error {
+	return c.connect(server, origin, headers)
+}
+
 // Connect will connect to server with an optional origin.
 // More details here: http://godoc.org/code.google.com/p/go.net/websocket#Dial
 func (c *Client) Connect(server, origin string) error {
+	return c.connect(server, origin, nil)
+}
+
+func (c *Client) connect(server, origin string, headers map[string]string) error {
 	if debug {
 		log.Print("turnpike: connect")
 	}
 	var err error
-	if c.ws, err = websocket.Dial(server, wampProtocolId, origin); err != nil {
+	if c.ws, err = c.dialWithHeaders(server, wampProtocolId, origin, headers); err != nil {
 		return fmt.Errorf("Error connecting to websocket server: %s", err)
 	}
 
@@ -353,6 +361,22 @@ func (c *Client) Connect(server, origin string) error {
 	go c.send()
 
 	return nil
+}
+
+func (c *Client) dialWithHeaders(url_, protocol, origin string, headers map[string]string) (ws *websocket.Conn, err error) {
+	config, err := websocket.NewConfig(url_, origin)
+	if err != nil {
+		return nil, err
+	}
+	if protocol != "" {
+		config.Protocol = []string{protocol}
+	}
+	if headers != nil {
+		for key, val := range headers {
+			config.Header.Add(key, val)
+		}
+	}
+	return websocket.DialConfig(config)
 }
 
 func (c *Client) Disconnect() error {
