@@ -176,6 +176,15 @@ func (t *Server) ConnectedClients() []string {
 	return clientIDs
 }
 
+func (t *Server) SubscribedTopicUris() []string {
+	topicUris := []string{}
+	for topic := range t.subscriptions {
+		topicUris = append(topicUris, topic)
+	}
+
+	return topicUris
+}
+
 // HandleWebsocket implements the go.net/websocket.Handler interface.
 func (t *Server) HandleWebsocket(conn *websocket.Conn) {
 	defer conn.Close()
